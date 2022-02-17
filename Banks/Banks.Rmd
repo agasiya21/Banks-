@@ -1,0 +1,92 @@
+---
+title: "Banks"
+author: "Agasiya"
+date: "1/23/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, comment = NA)
+```
+
+```{r}
+library(gtsummary)
+library(tidyverse)
+library(psych)
+library(readxl)
+library(GGally)
+library(psych)
+library(ggcorrplot)
+library(corrplot)
+library(gtsummary)
+library(kableExtra)
+library(finalfit)
+library(summarytools)
+library("PerformanceAnalytics")
+dat <- read_excel("C:/R Projects/Banks/work.xlsx")
+cod <- read_excel("C:/R Projects/Banks/code.xlsx")
+Hmisc::label(dat, self = F) <- cod$label
+View(dat)
+```
+
+```{r}
+dat %>% group_by(year) %>% 
+  summarise(
+    avg = mean(npl_ratio, na.rm = TRUE)
+    #tot = sum(price, na.rm-T),
+    #max = max(price, na.rm-T) ## chose your preference
+  ) %>%
+  ggplot(aes(year, avg)) +
+  geom_bar(stat = "identity", fill = 3) +
+ geom_text(aes(label= ""))+
+  labs(title = "Mean of NPL Ratio", x = "Year", y = " Mean of Nonperforming Loans")
+```
+
+
+## Reggression 
+```{r}
+glm <- lm(npl_ratio  ~ roa + roe + size + gdp + adep + nim + inf + hhi + car, data = dat)
+summary(glm)
+```
+
+## Reggression 
+```{r}
+glm <- lm(roa  ~ roe + size + gdp + adep + nim + inf + hhi + car, data = dat)
+summary(glm)
+```
+
+```{r}
+glm <- lm(roe  ~ roa + size + gdp + adep + nim + inf + hhi + car, data = dat)
+summary(glm)
+```
+
+
+```{r eval=FALSE, include=FALSE}
+explanatory = c('roa', 'roe', 'size', 'gdp', 'nim', 'inf')
+dependent = "npl_ratio"
+dat %>% finalfit(dependent, explanatory) -> t1
+knitr::kable(t1, row.names = FALSE, align = c("l","l", "r", "r", "r", "r"))
+```
+
+## Descriptives
+```{r}
+describe(dat)
+```
+
+```{r fig.height=10, fig.width=12, message=FALSE, warning=FALSE}
+dat = dat %>% select(-c(year, firm))
+corr <- dat[ , sapply(dat, is.numeric)]
+cormtrx <- cor(corr)
+ggpairs(corr, lower = NULL, diag = NULL, title="Title: correlation matrix")
+#ggcorr(corr, palette = "RdBu", label = T)
+#ggcorrplot(corr, order = 'hclust', type = "lower", lab = T)
+#chart.Correlation(cor, histogram=F, h=19, method = "pearson")
+#ggcorrplot(cor, hc.order = T, type = "lower",lab = TRUE)
+#corrplot(cor, lower = NULL)
+#Predictor <- c('npl', 'roa', 'roe', 'gdp', 'inf')
+#Corr_Coef <- c(-0.066, -0.113, -0.026, -0.156, 0.044)
+#Linear_Relatioshion <- c("Weak Relationship", "No Relationship", "Very strong Relationship", "ModerateRelationship", "Strong Relationship")
+#df <- data.frame(Predictor, Corr_Coef, Linear_Relatioshion)
+#df
+```
+
